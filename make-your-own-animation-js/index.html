@@ -72,6 +72,7 @@
 
                 function drawCircles() {
                     window.clear();
+                    //nbRender++;
 
                     // seems good
                     // redCircle.clear(context);
@@ -99,7 +100,8 @@
 
                     
                     animate() {
-                        this.render();
+                        this.askRendering();
+
                         this._id = window.requestAnimationFrame(this.animate.bind(this));
                     }
 
@@ -117,30 +119,43 @@
                         }
                     }
 
-                    render(loop = false) {
+                    askRendering() {
                         if (typeof this.onRender === 'function') {
                             this.onRender();
                         }
 
                         else {
                             throw new Error('Animation.onRender must be a function, but you give a ' + typeof this.onRender);
-                        }
+                        } 
+                    }
+
+                    render() {
+                        this._id = window.requestAnimationFrame(this.askRendering.bind(this));
                     }
                 }
 
+                
                 // danger multiples loop
                 // animationLoop();
                 // animationLoop();
                 // animationLoop();
 
                 const animation = new Animation(function() {
-                    console.log('render', lastTick);
+                    console.log('animation render', lastTick);
                     // window.clear();
                     drawCircles();    
                     nbRender++;
                 });
 
                 animation.play();
+
+                document.body.addEventListener('mousemove', event => {
+                    redCircle.x = event.clientX;
+                    redCircle.y = event.clientY;
+                    drawCircles();
+                    
+                });
+
 
                 setInterval(function() {
                     console.log(nbRender);
@@ -152,6 +167,8 @@
                 setInterval(function() {
                     if (Math.random() < 0.5) {
                         redCircle.wiggle();
+                        
+                        // animation.play();
                     }
 
                     // window.requestAnimationFrame(animation);
@@ -160,6 +177,7 @@
                 setInterval(function() {
                     if (Math.random() < 0.5) {
                         blueCircle.wiggle();
+                        //animation.animate();
                     }
 
                     // window.requestAnimationFrame(animation);
