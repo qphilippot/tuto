@@ -44,7 +44,14 @@
                     lastTick = Date.now();
                 }, 1000);
 
-                function render() {
+                            
+                var x = 50;
+                var y = 50;
+
+                var duration = 4000;
+
+
+                function render() {  
                     var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
                     for (var i = 0; i < imageData.data.length; i += 4) {
                         imageData.data[i] = Math.random() * 255;
@@ -56,12 +63,23 @@
                     context.putImageData(imageData, 0, 0);
                 }
 
-
-                // // Rendering loop interval
+                // Rendering loop interval
                 setInterval(function() {
+                    // logic of our animation
                     nbRender++;
                     window.clear(); 
-                    render();
+
+
+                    var now = Date.now();
+
+                    x = ((now % duration) / duration * canvas.width);
+                   
+                    // // draw circle
+                    context.beginPath();
+                    context.arc(x,y, 30, 0, _2PI);
+                    context.closePath();
+                    context.fill();
+                    context.stroke();
                 }, 16);
             });
         </script>

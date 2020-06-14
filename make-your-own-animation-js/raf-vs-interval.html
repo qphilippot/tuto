@@ -1,0 +1,189 @@
+<html>
+    <head>
+<style>
+    body {
+        background: #222222;
+        color:aliceblue;
+    }
+
+    section {
+        float: left;
+        width: 50%;
+        margin: 3% auto;
+        text-align: center;
+    }
+
+    canvas {
+        width: 80%;
+    }
+</style>
+    </head>
+    <body>
+   
+
+        <section id="interval">
+            <h1>setInterval</h1>
+            <div class="frame-rate" ></div>
+            <canvas></canvas>
+        </section>
+
+        <section id="raf">
+            <h1>RequestAnimationFrame</h1>
+            <div class="frame-rate"></div>
+            <canvas></canvas>
+        </section>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const raf = {
+                    prompter: document.querySelector('#raf > .frame-rate'),
+                    canvas: document.querySelector('#raf > canvas'),
+                    nbRender: 0
+                };
+
+                const interval = {
+                    prompter: document.querySelector('#interval > .frame-rate'),
+                    canvas: document.querySelector('#interval > canvas'),
+                    nbRender: 0
+                };
+          
+
+                raf.context = setupCanvas(raf.canvas);
+                interval.context = setupCanvas(interval.canvas);
+
+                const canvas = document.querySelector('canvas');    
+                const _2PI = 2 * Math.PI;
+
+                
+                function setupCanvas(canvasElement) {
+                    canvasElement.width = canvasElement.offsetWidth;
+                    canvasElement.height = canvasElement.offsetWidth;
+                
+                    const ctx = canvasElement.getContext('2d');
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                    ctx.lineWidth = 1;
+
+                    ctx.fillStyle = 'rgb(255,255,255)';
+                    return ctx;
+                }
+              
+
+                window.clear = function(animationData) {
+                    animationData.context.clearRect(0, 0, animationData.canvas.width, animationData.canvas.height);
+                }
+
+
+let lastInterval = Date.now();
+setInterval(function() {
+    const delay = (Date.now() - lastInterval) / 1000;
+    lastInterval = Date.now();
+    interval.prompter.textContent = interval.nbRender + ' fps';
+    raf.prompter.textContent = raf.nbRender + ' fps';
+    raf.nbRender = 0;
+    interval.nbRender = 0;
+
+    lastTick = Date.now();
+}, 1000);
+
+function generateCircle() {
+    return [
+        10, 10, // x, y
+        Math.random()* 3, // dx
+        Math.random()* 2, // dy
+        Math.random()*5+10,
+        "rgba(" + parseInt(Math.random()*255) + "," + parseInt(Math.random()*255) + "," + parseInt(Math.random()*255) + "," + "0.8)"
+    ];
+}
+
+var circles = new Array(3000);
+for(var k = 0; k < circles.length; ++k) {
+    circles[k] = generateCircle();
+}
+
+window.circles  = circles;
+function render(context) {
+  
+	if( circles == null ) return;
+	
+	for( var i = 0; i < circles.length; ++i )
+	{
+		var circle = circles[i];
+        circle[0] +=circle[2];		 
+        circle[1] +=circle[3];
+
+        if (
+            circle[0] + 1.55 * circle[4] > canvas.width &&
+            circle[2] > 0
+        ) {
+            circle[2] = -circle[2];
+        }
+
+        if (
+            circle[1]+ 1.05 * circle[4] >canvas.height && 
+            circle[3] > 0
+        ) {
+            circle[3] = -circle[3];
+        }
+
+		if (circle[0] - 1.55 * circle[4] < 0 && circle[2] < 0) {
+            circle[2] = -circle[2];
+        }
+
+		if (circle[1]-1.05*circle[4]<0 &&circle[3] < 0) {
+            circle[3] = -circle[3];
+        }
+
+        context.fillStyle = circle[5];
+        context.beginPath();
+		context.arc(circle[0],circle[1], 8 ,0,6.283185,0,true);
+		context.fill();
+	}
+}
+
+var animation = function() {
+    window.requestAnimationFrame(animation);
+
+    raf.nbRender++;
+    window.clear(raf);
+    render(raf.context);
+    interval.nbRender++;
+    window.clear(interval);
+    render(interval.context);
+}
+
+animation();
+// animation(raf);
+// animation(interval);
+
+
+// setInterval(function() {
+//     let progress = Date.now() % 20000;
+//     let intensity =  0;
+    
+//     if (progress > 10000) {
+//         intensity = 100 -  100 * (progress / 2) / 10000;
+//     }
+//     else {
+//         intensity = 100 * progress / 10000;
+//     }
+
+//   document.body.style.backgroundColor = 'rgb(' + intensity +',' + intensity + ',' + intensity + ')';
+// }, 10);
+
+// setInterval(function() {
+//     // logic of our animation
+//     interval.nbRender++;
+//     window.clear(interval); 
+//     render(interval.context);
+// }, 16 );
+
+// setInterval(function() {
+//     // logic of our animation
+//     raf.nbRender++;
+//     window.clear(raf); 
+//     render(raf.context);
+// }, 16 );
+            });
+        </script>
+    </body>
+</html>
