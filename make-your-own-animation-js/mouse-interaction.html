@@ -1,0 +1,158 @@
+<html>
+    <head>
+<style>
+    body {
+        background: #222222;
+        color:aliceblue;
+    }
+
+    section {
+        float: left;
+        margin: 3% auto;
+        text-align: center;
+        width: 100%;
+    }
+
+    canvas {
+        width: 80%; 
+        height: 80vh;
+        margin: auto;
+    }
+</style>
+    </head>
+    <body>
+        <section id="raf">
+            <h1>RequestAnimationFrame</h1>
+            <div class="frame-rate"></div>
+            <canvas></canvas>
+        </section>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const raf = {
+                    prompter: document.querySelector('#raf > .frame-rate'),
+                    canvas: document.querySelector('#raf > canvas'),
+                    nbRender: 0
+                };
+
+              
+
+                raf.context = setupCanvas(raf.canvas);
+
+                const canvas = document.querySelector('canvas');    
+                const _2PI = 2 * Math.PI;
+
+                
+                function setupCanvas(canvasElement) {
+                    canvasElement.width = canvasElement.offsetWidth;
+                    canvasElement.height = canvasElement.offsetHeight;
+                
+                    const ctx = canvasElement.getContext('2d');
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                    ctx.lineWidth = 1;
+
+                    ctx.fillStyle = 'rgb(255,255,255)';
+                    return ctx;
+                }
+              
+
+                window.clear = function(animationData) {
+                    animationData.context.clearRect(0, 0, animationData.canvas.width, animationData.canvas.height);
+                }
+
+
+
+function generateCircle() {
+    return [
+        10, 10, // x, y
+        Math.random()* 3, // dx
+        Math.random()* 2, // dy
+        Math.random()*5+10,
+        "rgba(" + parseInt(Math.random()*255) + "," + parseInt(Math.random()*255) + "," + parseInt(Math.random()*255) + "," + "0.8)"
+    ];
+}
+
+var circles = new Array(3000);
+for(var k = 0; k < circles.length; ++k) {
+    circles[k] = generateCircle();
+}
+window.mouseCircle = [
+        10, 10, // x, y
+        Math.random()* 3, // dx
+        Math.random()* 2, // dy
+        Math.random()*5+10,
+        '#222222'
+    ];
+
+window.circles  = circles;
+function drawCircle(circle, context) {
+    context.fillStyle = circle[5];
+    context.beginPath();
+    context.arc(circle[0],circle[1], 25 ,0,6.283185,0,true);
+    context.fill();
+}
+
+function render(context) {
+  
+	if( circles == null ) return;
+	
+	for( var i = 0; i < circles.length; ++i )
+	{
+		var circle = circles[i];
+        circle[0] +=circle[2];		 
+        circle[1] +=circle[3];
+
+        if (
+            circle[0] + 1.55 * circle[4] > canvas.width &&
+            circle[2] > 0
+        ) {
+            circle[2] = -circle[2];
+        }
+
+        if (
+            circle[1]+ 1.05 * circle[4] >canvas.height && 
+            circle[3] > 0
+        ) {
+            circle[3] = -circle[3];
+        }
+
+		if (circle[0] - 1.55 * circle[4] < 0 && circle[2] < 0) {
+            circle[2] = -circle[2];
+        }
+
+		if (circle[1]-1.05*circle[4]<0 &&circle[3] < 0) {
+            circle[3] = -circle[3];
+        }
+
+        drawCircle(circle, context);
+	}
+
+    drawCircle(mouseCircle, context);
+}
+
+document.addEventListener('mousemove', function(event) {
+    // render(raf.context);
+    
+    // raf.context.fillStyle = "#222222"
+    // raf.context.beginPath();
+	// raf.context.arc(event.clientX,event.clientY, 10 ,0,6.283185,0,true);
+	// raf.context.fill();
+    var bb = event.target.getBoundingClientRect();
+    mouseCircle[0] = event.clientX - bb.left;
+    mouseCircle[1] = event.clientY - bb.top;
+});
+
+var animation = function() {
+    window.requestAnimationFrame(animation);
+
+    raf.nbRender++;
+    window.clear(raf);
+    render(raf.context);
+}
+
+animation();
+
+            });
+        </script>
+    </body>
+</html>
