@@ -22,7 +22,6 @@
     </head>
     <body>
         <section id="raf">
-            <h1>RequestAnimationFrame</h1>
             <div class="frame-rate"></div>
             <canvas></canvas>
         </section>
@@ -72,7 +71,7 @@ function generateCircle() {
     ];
 }
 
-var circles = new Array(3000);
+var circles = new Array(1000);
 for(var k = 0; k < circles.length; ++k) {
     circles[k] = generateCircle();
 }
@@ -127,7 +126,7 @@ function render(context) {
         drawCircle(circle, context);
 	}
 
-    drawCircle(mouseCircle, context);
+    // drawCircle(mouseCircle, context);
 }
 
 document.addEventListener('mousemove', function(event) {
