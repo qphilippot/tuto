@@ -67,7 +67,8 @@ function generateCircle() {
         Math.random()* 3, // dx
         Math.random()* 2, // dy
         Math.random()*5+10,
-        "rgba(" + parseInt(Math.random()*255) + "," + parseInt(Math.random()*255) + "," + parseInt(Math.random()*255) + "," + "0.8)"
+        "rgba(" + parseInt(Math.random()*255) + "," + parseInt(Math.random()*255) + "," + parseInt(Math.random()*255) + "," + "0.8)",
+        "rgba(0,0,0,0)"
     ];
 }
 
@@ -75,20 +76,25 @@ var circles = new Array(1000);
 for(var k = 0; k < circles.length; ++k) {
     circles[k] = generateCircle();
 }
+
+// create our special circle
 window.mouseCircle = [
-        10, 10, // x, y
-        Math.random()* 3, // dx
-        Math.random()* 2, // dy
-        Math.random()*5+10,
-        '#222222'
-    ];
+    10, 10, // x, y
+    Math.random()* 3, // dx
+    Math.random()* 2, // dy
+    Math.random()*5+10,
+    '#222222',
+    '#333333'
+];
 
 window.circles  = circles;
 function drawCircle(circle, context) {
     context.fillStyle = circle[5];
+    context.strokeStyle = circle[6];
     context.beginPath();
     context.arc(circle[0],circle[1], 25 ,0,6.283185,0,true);
     context.fill();
+    context.stroke();
 }
 
 function render(context) {
@@ -126,16 +132,10 @@ function render(context) {
         drawCircle(circle, context);
 	}
 
-    // drawCircle(mouseCircle, context);
+    drawCircle(mouseCircle, context);
 }
 
 document.addEventListener('mousemove', function(event) {
-    // render(raf.context);
-    
-    // raf.context.fillStyle = "#222222"
-    // raf.context.beginPath();
-	// raf.context.arc(event.clientX,event.clientY, 10 ,0,6.283185,0,true);
-	// raf.context.fill();
     var bb = event.target.getBoundingClientRect();
     mouseCircle[0] = event.clientX - bb.left;
     mouseCircle[1] = event.clientY - bb.top;
@@ -147,6 +147,7 @@ var animation = function() {
     raf.nbRender++;
     window.clear(raf);
     render(raf.context);
+    drawCircle(mouseCircle, raf.context);
 }
 
 animation();
