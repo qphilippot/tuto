@@ -83,8 +83,8 @@ window.mouseCircle = [
     Math.random()* 3, // dx
     Math.random()* 2, // dy
     Math.random()*5+10,
-    '#222222',
-    '#333333'
+    'rgba(255,0,0,0.5)',
+    '#FFFFFF'
 ];
 
 window.circles  = circles;
@@ -142,15 +142,72 @@ document.addEventListener('mousemove', function(event) {
 });
 
 var animation = function() {
-    window.requestAnimationFrame(animation);
+    if (animation.isPlaying !== false) {
+        window.requestAnimationFrame(animation);
+        animation.render();
+    }
+}
 
+// var animation = function() {
+//     window.requestAnimationFrame(animation);
+//     if (animation.isPlaying !== false) {
+//         animation.render();
+//     }
+
+//     console.log('loopi-loopi-douh !');
+// }
+
+
+animation.pause = function() {
+    animation.isPlaying = false;
+};
+
+animation.play = function() {
+    animation.isPlaying = true;
+    window.requestAnimationFrame(animation);
+}
+
+
+animation.render = function() {
     raf.nbRender++;
     window.clear(raf);
     render(raf.context);
     drawCircle(mouseCircle, raf.context);
 }
 
-animation();
+//animation();
+
+
+
+
+var animationIntervalId = null;
+function play() {
+    if (animationIntervalId === null) {
+        animationIntervalId = setInterval(function() {
+            raf.nbRender++;
+            window.clear(raf);
+            render(raf.context);
+            drawCircle(mouseCircle, raf.context);
+    }, 16);
+    }
+}
+
+function pause() {
+    if (animationIntervalId !== null) {
+        console.log('pause');
+        clearInterval(animationIntervalId);
+        animationIntervalId = null;
+    }
+}
+
+window.play = play;
+window.pause = pause;
+
+
+
+
+
+window.animation = animation;
 
             });
         </script>
