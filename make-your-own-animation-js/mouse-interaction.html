@@ -148,6 +148,7 @@ var animation = function() {
     }
 }
 
+// -- Implemention using rAF --
 // var animation = function() {
 //     window.requestAnimationFrame(animation);
 //     if (animation.isPlaying !== false) {
@@ -175,6 +176,7 @@ animation.render = function() {
     drawCircle(mouseCircle, raf.context);
 }
 
+// start animation by defaut ?
 //animation();
 
 
@@ -202,10 +204,6 @@ function pause() {
 
 window.play = play;
 window.pause = pause;
-
-
-
-
 
 window.animation = animation;
 
