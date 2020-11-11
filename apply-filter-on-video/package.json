@@ -1,0 +1,28 @@
+{
+  "name": "apply-filter-on-video",
+  "version": "1.0.0",
+  "description": "tutorial showing how to apply some filter over a video on live",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack"
+  },
+  "keywords": [
+    "js",
+    "image-processing",
+    "tutorial",
+    "video",
+    "canvas"
+  ],
+  "author": "qphilippot",
+  "license": "ISC",
+  "dependencies": {
+    "image-processing": "git+https://github.com/qphilippot/js-image-processing.git#export"
+  },
+  "devDependencies": {
+    "webpack": "^4.35.3",
+    "webpack-cli": "^3.3.5",
+    "clean-webpack-plugin": "^3.0.0",
+    "file-loader": "^4.1.0",
+    "html-webpack-plugin": "^3.2.0"
+  }
+}
