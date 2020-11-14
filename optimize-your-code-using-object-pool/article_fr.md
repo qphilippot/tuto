@@ -251,7 +251,7 @@ class ParticlesPool {
     }
     
     getOne(x, y, r, g, b, born_at) {
-        const instance = null;
+        let instance = null;
         if (this.index >= 0) {
             instance = this.instances[this.index];
             instance.initialize(x, y, r, g, b, born_at);
