@@ -1,6 +1,192 @@
 import Animation from '../../shared/animation.model';
 import  ImageProcessing  from 'image-processing';
 
+
+class Vec3Pool {
+    constructor() {
+        this.instances = [];
+        this.index = -1;
+    }
+    
+
+    getOne() {
+        let instance = null;
+        if (this.index >= 0) {
+            instance = this.instances[this.index];
+            this.index--;
+        }
+ 
+        else {
+            instance = new Array(3);
+        }
+ 
+        return instance;
+    }
+ 
+    recycle(instance) {
+        this.instances[this.index + 1] = instance;
+        this.index++;
+    }
+}
+
+window.vec3Pool = new Vec3Pool();
+
+function rgbToHSL(rgb, hsl = new Array(3)) {
+    // The R,G,B values are divided by 255 to change the range from 0..255 to 0..1
+    const r = rgb[0] / 255;
+    const g = rgb[1] / 255;
+    const b = rgb[2] / 255;
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+
+    const delta = max - min;
+
+    let hue = 60;
+
+    if (delta === 0) {
+        hue = 0;
+    }
+
+    else if (max === r) {  
+        hue *= (((g - b) / delta) % 6);
+    }
+
+    else if (max === g) {
+        hue *= (((b - r) / delta) + 2);
+    }
+
+    else {
+        hue *= (((r - g) / delta) + 4);
+    }
+
+
+    const lue = (max + min) / 2;
+
+    let saturation = 0;
+
+    if (delta !== 0) {
+        saturation = delta / ( 1 - Math.abs(2 * lue - 1));
+    }
+
+    hsl[0] = hue;
+    hsl[1] = saturation;
+    hsl[2] = lue;
+
+    return hsl;
+}
+
+
+function hslToRGB(hsl, rgb = new Array(3)) {
+    const c = (1 - Math.abs(2 * hsl[2] - 1)) * hsl[1];
+    const x = c * (1 - Math.abs(((hsl[0] / 60) % 2) - 1));
+    const m = hsl[2] - c / 2;
+
+    let r, g, b;
+
+    const hue = hsl[0];
+
+    if (hue >= 0 && hue < 60) {
+        r = c;
+        g = x;
+        b = 0;
+    }
+
+    else if (hue >= 60 && hue < 120) {
+        r = x;
+        g = c;
+        b = 0;  
+    }
+
+    else if (hue >= 120 && hue < 180) {
+        r = 0;
+        g = c;
+        b = x;  
+    }
+
+    else if (hue >= 180 && hue < 240) {
+        r = 0;
+        g = x;
+        b = c;  
+    }
+
+    else if (hue >= 240 && hue < 300) {
+        r = x;
+        g = 0;
+        b = c;  
+    }
+
+    else if (hue >= 300 && hue < 360) {
+        r = c;
+        g = 0;
+        b = x;  
+    }
+
+    rgb[0] = Math.max(0, Math.min(Math.round((r + m) * 255), 255));
+    rgb[1] = Math.max(0, Math.min(Math.round((g + m) * 255)));
+    rgb[2] = Math.max(0, Math.min(Math.round((b + m) * 255)));
+
+    return rgb;
+
+}
+
+function generateRedToBlueLUT() {
+    const size = 16777216; // 256 * 256 * 256
+    const lut = new Array(size);
+
+    for (let i = 0; i < size; i++) {
+        lut[i] = [255, 0, 0];
+    }
+
+    for (let redOffset = 0; redOffset < 256; redOffset++) {
+        for (let greenOffset = 0; greenOffset < 256; greenOffset++) {
+            for (let blueOffset = 0; blueOffset < 256; blueOffset++) {
+                const rgb = vec3Pool.getOne();
+                const hsl = vec3Pool.getOne();
+                rgb[0] = redOffset;
+                rgb[1] = greenOffset;
+                rgb[2] = blueOffset; 
+
+              
+                rgbToHSL(rgb, hsl);
+
+                hsl[1] = Math.max(0, Math.min(hsl[1], 1));
+                hsl[2] = Math.max(0, Math.min(hsl[2], 1));
+                
+                if (hsl[0] < 0) {
+                    hsl[0] += 360;
+                }
+
+                hsl[0] = hsl[0] % 360;
+
+                if (hsl[0] > 340 && hsl[2] < 0.85) {
+                    hsl[0] -= 120;
+                }
+
+                else if (hsl[0] < 20 && hsl[2] < 0.85) {
+                    hsl[0] += 240;
+                }
+
+                if (hsl[0] < 0) {
+                    hsl[0] += 360;
+                }
+
+                hsl[0] = hsl[0] % 360;
+
+              
+
+                hslToRGB(hsl, rgb);
+
+                lut[redOffset * 256*256 + greenOffset * 256 + blueOffset] = Array.from(rgb);
+                vec3Pool.recycle(rgb);
+                vec3Pool.getOne(hsl);
+            }
+        }
+    }
+
+    return lut;
+}
+
 function shallowCopy(target, source) {
     source.forEach((value, index) => {
         target[index] = value;
@@ -77,103 +263,89 @@ function initializeHistory(buffersArray, depth, size = 0) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const persistanceInput = document.querySelector('input[name="persistance"]');
-    const historyInput = document.querySelector('input[name="history"]');
     const video = document.getElementById('tuto-video');
 
-    const state = {
-        currentOffset: 0,
-        persistanceFactor: 0
-    };
 
-    let lastBuffer = null;
-    window.lastBuffer = lastBuffer;
+    // function generateLUT(colorsStep) {
+    //     const dynamique = 256;
+    //     const lut = new Array(dynamique); // 0..255 -> 256 colors
+       
+
+    //     colorsStep.sort((a, b) => a.threshold - b.threshold);
+
+    //     let currentStep = null;
+    //     let nextStep = null;
+    //     let stepIndex = 0;
+    //     let i = 0;
+
+    //     lut[0] = colorsStep[0].color;
+    //     i++;
+
+    //     while (i < dynamique) {
+           
+    //         let percent = i / dynamique;
+
+    //         while (
+    //             stepIndex < colorsStep.length - 1 &&
+    //             percent >= colorsStep[stepIndex + 1].threshold
+    //         ) {
+    //             stepIndex++;
+    //         }
+            
+    //         if (stepIndex === colorsStep.length - 1) {
+    //             while(i < dynamique) {
+    //                 lut[i] = [
+    //                     colorsStep[stepIndex].color[0], 
+    //                     colorsStep[stepIndex].color[1], 
+    //                     colorsStep[stepIndex].color[2]
+    //                 ];
+    
+    //                 i++;
+    //             }
+    //         }
+
+    //         else {
+    //             currentStep = colorsStep[stepIndex];
+    //             nextStep = colorsStep[stepIndex + 1];
+    //             const borneInf = i;
+    //             const borneSup = Math.ceil(nextStep.threshold * dynamique);
+    //             const borneSize = borneSup - borneInf;
+                
+    //             const step = [
+    //                 (nextStep.color[0] - currentStep.color[0]) / borneSize,
+    //                 (nextStep.color[1] - currentStep.color[1]) / borneSize,
+    //                 (nextStep.color[2] - currentStep.color[2]) / borneSize
+    //             ]; 
+    
+    //             //console.log(currentStep.color.slice(0), nextStep.color.slice(0), step.slice(0), borneSize, borneInf, borneSup, nextStep.threshold)
+    //             // interpolate colors
+    //             while(i < borneSup) {
+    //                 lut[i] = [
+    //                     lut[i - 1][0] + step[0], 
+    //                     lut[i - 1][1] + step[1], 
+    //                     lut[i - 1][2] + step[2] 
+    //                 ];
+    
+    //                 i++;
+    //             }
+    //         }
+    //     }
+
+    //     // Always avoid floating values with color intensity
+    //     for (let j = 0; j < lut.length; j++) {
+    //         lut[j][0] = Math.ceil(lut[j][0]);
+    //         lut[j][1] = Math.ceil(lut[j][1]);
+    //         lut[j][2] = Math.ceil(lut[j][2]);
+    //     }
+
+    //     return lut;
+    // }
   
-    let historyLength = historyInput.value;
-    let diffHistory = Array(historyLength);
-    
-    let nbFrameRendered = 0;
-    let persistance = persistanceInput.value;
-    window.persistance = persistance;
-    
-    state.persistanceFactor = window.persistance / historyLength;
-    
- 
-    function getHistoryBuffer(index) {
-        const bufferIndex = (state.currentOffset + index) % historyLength;
-        return diffHistory[bufferIndex];
-    }
-
-    function computeMovement(target, newFrame, oldFrame) {
-        for (let offset = 0; offset < newFrame.length; offset += 4) {
-            target[offset] = Math.abs(newFrame[offset] - oldFrame[offset]);
-            target[offset + 1] = Math.abs(newFrame[offset + 1] - oldFrame[offset + 1]); 
-            target[offset + 2] = Math.abs(newFrame[offset + 2] - oldFrame[offset + 2]); 
-            target[offset + 3] = 255;
-        }
-    }
-    
-    function computePersistance(buffer) {
-        let indexedHistoryBuffer = Array(historyLength);
-        for (let k = 0; k < historyLength; k++) {
-            indexedHistoryBuffer[k] = getHistoryBuffer(k);
-        }
-
-        for (let pixelOffset = 0; pixelOffset < buffer.length; pixelOffset++) {
-            buffer[pixelOffset] = 0;
-            buffer[pixelOffset + 1] = 0;
-            buffer[pixelOffset + 2] = 0;
-            buffer[pixelOffset + 3] = 255;
-            for (let historyBufferOffset = historyLength - 1; historyBufferOffset >= 0; historyBufferOffset--) {
-                const weight = state.persistanceFactor * (historyBufferOffset / historyLength);
-                const historyBuffer = indexedHistoryBuffer[historyBufferOffset];
-                buffer[pixelOffset] += weight * historyBuffer[pixelOffset];
-                buffer[pixelOffset + 1] += weight * historyBuffer[pixelOffset + 1];
-                buffer[pixelOffset + 2] += weight * historyBuffer[pixelOffset + 2];
-            }
-        }
-    }
-
-    function getValue(offset, currentBuffer) {
-        let lastValue = 0;
-        // warning : Uint8ClampedArray is not ... An Array (wtf Javascript ?)
-        // --> Don't use Array.isArray() with your instance, it will return false
-        if (window.lastBuffer instanceof Uint8ClampedArray) {
-            lastValue = window.lastBuffer[offset]
-        }
-
-
-        let value = Math.abs(currentBuffer[offset] - lastValue);
-
-        for (let i = historyLength - 1; i >= 0; --i) {
-            const weight = (window.persistance / historyLength) * i;
-            const historyBuffer = getHistoryBuffer(i);
-            value += weight * historyBuffer[offset];
-        }
-        
-        return Math.min(255, value);
-    }
+    // window.lut = generateLUT(colorsContraints);
+    window.lut = generateRedToBlueLUT();
 
     const tutoCanvas =  document.getElementById('tuto-canvas');
-    const pixelBufferSize =  tutoCanvas.width * tutoCanvas.height * 4;
-    initializeHistory(diffHistory, historyLength, pixelBufferSize);
 
-    persistanceInput.addEventListener('change', () => {
-        window.persistance = persistanceInput.value;
-        state.persistanceFactor = window.persistance / historyLength;
-    });
-
-    
-    
-    historyInput.addEventListener('change', () => {
-        historyLength = historyInput.value;
-        diffHistory = Array(historyLength);
-        initializeHistory(diffHistory, historyLength, pixelBufferSize);
-        state.persistanceFactor = window.persistance / historyLength;
-    });
-
-
-    const bufferPool = new BufferPool(pixelBufferSize);
 
     const animation = new Animation({
         canvas: tutoCanvas,
@@ -188,49 +360,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const fakeImageData = fakeContext.getImageData(0, 0, fakeCanvas.width, fakeCanvas.height);
 
-            applyGrayscaleFilter(fakeImageData.data);
-       
-            if (window.lastBuffer ===  null) {
-                lastBuffer = fakeImageData.data.slice(0);
-                window.lastBuffer = lastBuffer;
-                return;
-            }
-            
-
-            // const diffBuffer = new Uint8Array(buffer.length);
-            const diffBuffer = bufferPool.getOne();
-            const persistanceBuffer = bufferPool.getOne();
-            computeMovement(diffBuffer,  fakeImageData.data, window.lastBuffer);
-            computePersistance(persistanceBuffer);
-     
-            shallowCopy(lastBuffer, fakeImageData.data);
-
-            // step 5 - diff with persistance
-            for (let offset = 0; offset <   fakeImageData.data.length; offset += 4) {               
-                fakeImageData.data[offset] = Math.min(255, diffBuffer[offset] + persistanceBuffer[offset]);
-                fakeImageData.data[offset + 1] = Math.min(255, diffBuffer[offset + 1] + persistanceBuffer[offset + 1]);
-                fakeImageData.data[offset + 2] = Math.min(255, diffBuffer[offset + 2] + persistanceBuffer[offset + 2]);
-                fakeImageData.data[offset + 3] = 255;
-
-                // diffBuffer[offset] =  Math.abs(buffer[offset] - window.lastBuffer[offset]);
-                // diffBuffer[offset + 1] =  Math.abs(buffer[offset + 1] - window.lastBuffer[offset + 1]); 
-                // diffBuffer[offset + 2] =  Math.abs(buffer[offset + 2] - window.lastBuffer[offset + 2]); 
-                // diffBuffer[offset + 3] = 255;
-            }
-            
-          
+            // applyGrayscaleFilter(fakeImageData.data);
            
+        
+            for (let offset = 0; offset < fakeImageData.data.length; offset += 4) { 
+                const r = fakeImageData.data[offset];
+                const g = fakeImageData.data[offset + 1];
+                const b = fakeImageData.data[offset + 2];
+
+                const lutIndex = r * 256 * 256 + g * 256 + b;
+              
+                try {
+                    const color = lut[lutIndex];      
+                    if (color[0] < 0 || color[0]>255) {
+                        console.log(r, g, b, lutIndex, lut.length, color.slice(0));
+                    }
+                    if (color[1] < 0 || color[1]>255) {
+                        console.log(r, g, b, lutIndex, lut.length, color.slice(0));
+                    }
+                    if (color[2] < 0 || color[2]>255) {
+                        console.log(r, g, b, lutIndex, lut.length, color.slice(0));
+                    }
+
+                    fakeImageData.data[offset] = Math.min(255, Math.floor(color[0]));
+                    fakeImageData.data[offset + 1] = Math.min(255, Math.floor(color[1]));
+                    fakeImageData.data[offset + 2] = Math.min(255, Math.floor(color[2]));
+                    fakeImageData.data[offset + 3] = 255;
+                }
+
+                catch(error) {
+                    console.error(error);
+                    console.log(r, g, b, lutIndex, lut.length);
+                    debugger;
+                }
             
-            let currentHistoryBuffer = diffHistory[state.currentOffset];
-            shallowCopy(currentHistoryBuffer, diffBuffer);
-
-            nbFrameRendered++;
-            state.currentOffset = nbFrameRendered % historyLength;
-
-      
-            bufferPool.recycle(diffBuffer);
-            bufferPool.recycle(persistanceBuffer);
-
+            }
+            
             animation.clear();
             context.putImageData(fakeImageData, 0, 0);
         }
