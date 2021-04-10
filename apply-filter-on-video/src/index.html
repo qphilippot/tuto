@@ -1,16 +1,25 @@
-<video 
-    id="tuto-video"
-    src="https://qphi-tutorial-assets.s3.eu-west-3.amazonaws.com/apply-filter-on-video/Bird.mp4"
-    crossorigin="anonymous"
-    controls
-></video>
+<div style="width: 80%">
+    <div style="max-width: 50%;float: left">
+        <video
+                id="tuto-video"
+                src="https://qphi-tutorial-assets.s3.eu-west-3.amazonaws.com/apply-filter-on-video/Bird.mp4"
+                crossorigin="anonymous"
+                width="300"
+                height="300"
+                style="object-fit:cover"
+                controls
+        ></video>
+    </div>
+    <div style="max-width: 50%; float: left">
+        <div style="height:300px;width:300px; overflow: hidden">
+            <canvas
+                    id="tuto-canvas"
+                    style="background: red; cursor:none;position: relative"
+            ></canvas>
+        </div>
+    </div>
+</div>
 
-<canvas 
-    id="tuto-canvas" 
-    width="300" 
-    height="300" 
-    style="background: red; cursor:none;"
-></canvas>
 
 <!-- <label>
     persistance : <input type="number" name="persistance" value="2">

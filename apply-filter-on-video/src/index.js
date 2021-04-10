@@ -194,17 +194,6 @@ function shallowCopy(target, source) {
 }
 
 
-function applyGrayscaleFilter(pixelBuffer) {
-    for (let offset = 0; offset <pixelBuffer.length; offset += 4) {
-        const grayscale = ImageProcessing.RGBToGrayscaleFilter.applyToPixel(pixelBuffer, offset);
-        pixelBuffer[offset] = grayscale;
-        pixelBuffer[offset + 1] = grayscale;
-        pixelBuffer[offset + 2] = grayscale;
-        pixelBuffer[offset + 3] = 255;
-    }
-}
-
-
 
 class BufferPool {
     constructor(bufferLength) {
@@ -402,6 +391,30 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     
+    video.addEventListener('loadeddata', () => {
+        if (video.videoWidth < video.videoHeight) {
+            animation.canvas.style.top = ((video.offsetHeight / video.videoHeight) * -100) + '%';
+
+            // due to object-fit:cover, all video height is not visible into <video> tag
+            // So instead of use only "video.offsetHeight" we also use the video ratio
+            animation.canvas.height =  video.offsetHeight * ( video.videoHeight / video.videoWidth);
+
+            // the whole width video is rendered into <video> tag
+            animation.canvas.width = video.offsetWidth;
+        }
+
+        else {
+            animation.canvas.style.left = ( (video.offsetWidth / video.videoWidth) * -100) + '%';
+
+            // due to object-fit:cover, all video width is not visible into <video> tag
+            // So instead of use only "video.offsetWidth" we also use the video ratio
+            animation.canvas.width =  video.offsetWidth * ( video.videoWidth  / video.videoHeight);
+
+            // the whole height video is rendered into <video> tag
+            animation.canvas.height =  video.offsetHeight;
+        }
+    });
+
     video.addEventListener('play', () => {
         animation.play();
     });
