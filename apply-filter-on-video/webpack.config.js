@@ -4,7 +4,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin').CleanWebpackPlugin;
 
 module.exports = {
   mode: 'development',
-  entry: './src/grayscale-pointer-1.js',
+  entry: './src/step-5+.js',
 
   plugins: [
     // new CleanWebpackPlugin(['dist/*']) for < v2 versions of CleanWebpackPlugin

@@ -1,7 +1,4 @@
 import Animation from '../../shared/animation.model';
-import PointerCoordsHelper from "../../shared/pointer-coords.helper";
-
-
 
 document.addEventListener('DOMContentLoaded', () => {
     // Create canvas for video's pixel extraction
@@ -53,38 +50,34 @@ document.addEventListener('DOMContentLoaded', () => {
         render: (context, canvas) => {
 
             const imageData = extractVideoImageData(video, canvas.width, canvas.height);
+            const boundingBox = canvas.getBoundingClientRect();
 
 
-            const coordsRelativeToCanvas = PointerCoordsHelper.getCoordsRelativeToElement(
-                canvas,
-                pointerCoords.x,
-                pointerCoords.y
-            );
+            // as i use object-fit cover css property to alter video and canvas shape
+            // i have to use this hook to resync mouse position and real canvas visible content
+            let x_min = boundingBox.left;
+            let x_max = boundingBox.right;
+            let y_min = boundingBox.top;
+            let y_max = boundingBox.bottom;
 
-            let x_min = 0;
-            let x_max = canvas.width;
-            let y_min = 0;
-            let y_max = canvas.height;
-
+            const style = getComputedStyle(animation.canvas);
             if (animation.canvas.width !== video.offsetWidth) {
-                const offset = ((video.offsetWidth) - (video.offsetWidth * ( video.videoWidth  / video.videoHeight))) / 2;
+                const offset = parseInt(style.left);
                 x_min -= offset;
-                x_max += offset;
-                console.log(offset)
+                x_max = x_min + video.offsetWidth;
             }
 
             if (animation.canvas.height !== video.offsetHeight) {
-                const offset =  ((video.offsetHeight) - (video.offsetHeight * ( video.videoHeight  / video.videoWidth))) / 2;
-                y_min += offset;
-                y_max -= offset;
+                const offset = parseInt(style.top);
+                y_min -= offset;
+                y_max = y_min + video.offsetHeight;
             }
 
-            console.log(x_min, y_min, x_max, y_max)
             const isPointerHoverCanvas = (
-                coordsRelativeToCanvas.x >= x_min &&
-                coordsRelativeToCanvas.y >= y_min &&
-                coordsRelativeToCanvas.x < x_max &&
-                coordsRelativeToCanvas.y < y_max
+                pointerCoords.x >= x_min &&
+                pointerCoords.y >= y_min &&
+                pointerCoords.x < x_max &&
+                pointerCoords.y < y_max
             );
 
 
@@ -110,15 +103,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         else {
-            animation.canvas.style.left = ( (video.offsetWidth / video.videoWidth) * -100) + '%';
-
             // due to object-fit:cover, all video width is not visible into <video> tag
             // So instead of use only "video.offsetWidth" we also use the video ratio
             animation.canvas.width =  video.offsetWidth * ( video.videoWidth  / video.videoHeight);
 
             // the whole height video is rendered into <video> tag
             animation.canvas.height =  video.offsetHeight;
+
+            animation.canvas.style.left = ( (video.offsetWidth / video.videoWidth) * -100) + '%';
         }
+
+
+        animation.context.width = video.offsetWidth;
+        animation.context.height = video.offsetHeight;
+        animation.canvas.style.width = animation.canvas.style.width + 'px';
+        animation.canvas.style.height = animation.canvas.style.height + 'px';
     });
 
     video.addEventListener('play', () => {
@@ -136,5 +135,8 @@ document.addEventListener('DOMContentLoaded', () => {
     video.addEventListener('timeupdate', () => {
         animation.askRendering()
     })
+
+    window.video = video;
+    window.animation = animation;
 });
 
