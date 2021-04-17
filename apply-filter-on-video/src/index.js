@@ -1,5 +1,4 @@
 import Animation from '../../shared/animation.model';
-import  ImageProcessing  from 'image-processing';
 
 
 class Vec3Pool {
@@ -177,7 +176,7 @@ function generateRedToBlueLUT() {
 
                 hslToRGB(hsl, rgb);
 
-                lut[redOffset * 256*256 + greenOffset * 256 + blueOffset] = Array.from(rgb);
+                lut[redOffset * 65536 + greenOffset * 256 + blueOffset] = Array.from(rgb);
                 vec3Pool.recycle(rgb);
                 vec3Pool.getOne(hsl);
             }
@@ -187,72 +186,27 @@ function generateRedToBlueLUT() {
     return lut;
 }
 
-function shallowCopy(target, source) {
-    source.forEach((value, index) => {
-        target[index] = value;
-    });
-}
-
-
-
-class BufferPool {
-    constructor(bufferLength) {
-        this.bufferLength = bufferLength;
-        this.instances = [];
-        this.index = -1;
-    }
-    
-    initialize(instance, fromBuffer = null) {
-        if (
-            fromBuffer !== null &&
-            fromBuffer.length === instance.length
-        ) {
-            shallowCopy(instance, fromBuffer);
-        }
-
-        // else {
-          
-        //     instance.fill(0);
-        // }
-    }
-
-    getOne(fromBuffer = null) {
-        let instance = null;
-        if (this.index >= 0) {
-            instance = this.instances[this.index];
-            //this.initialize(instance, fromBuffer);
-            this.index--;
-        }
- 
-        else {
-            instance = new Uint8ClampedArray(this.bufferLength);
-            // instance.length = ;
-            //this.initialize(instance, fromBuffer);
-        }
- 
-        return instance;
-    }
- 
-    recycle(instance) {
-        this.instances[this.index + 1] = instance;
-        this.index++;
-    }
-}
-
-function initializeHistory(buffersArray, depth, size = 0) {
-    if (buffersArray.length !== depth) {
-        buffersArray.length = depth;
-    }
-
-    for (let i = 0; i < depth; i++) {
-        if ((buffersArray[i] instanceof Uint8ClampedArray) === false) {
-            buffersArray[i] = new Uint8ClampedArray(size);
-        }
-    }
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     const video = document.getElementById('tuto-video');
+    const fpsLabel = document.getElementById('fps');
+    let nbFrameRendered = 0;
+
+    // Create canvas for video's pixel extraction
+    const extractPixelCanvas = document.createElement('canvas');
+    const extractPixelContext = extractPixelCanvas.getContext('2d');
+
+    function extractVideoImageData(video, width, height) {
+        if (extractPixelCanvas.width !==  width) {
+            extractPixelCanvas.width =  width;
+        }
+
+        if (extractPixelCanvas.height !==  height) {
+            extractPixelCanvas.height = height;
+        }
+
+        extractPixelContext.drawImage(video, 0, 0, extractPixelCanvas.width, extractPixelCanvas.height);
+        return extractPixelContext.getImageData(0, 0, extractPixelCanvas.width, extractPixelCanvas.height);
+    }
 
 
     // function generateLUT(colorsStep) {
@@ -339,58 +293,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const animation = new Animation({
         canvas: tutoCanvas,
         render: (context, canvas) => {
-            const fakeCanvas = document.createElement('canvas');
-            fakeCanvas.width =  canvas.width;
-            fakeCanvas.height = canvas.height;
-
-           
-            const fakeContext = fakeCanvas.getContext('2d');
-            fakeContext.drawImage(video, 0, 0, fakeCanvas.width, fakeCanvas.height);
-
-            const fakeImageData = fakeContext.getImageData(0, 0, fakeCanvas.width, fakeCanvas.height);
-
-            // applyGrayscaleFilter(fakeImageData.data);
-           
+            const imageData = extractVideoImageData(video, canvas.width, canvas.height);
+            const buffer = imageData.data;
         
-            for (let offset = 0; offset < fakeImageData.data.length; offset += 4) { 
-                const r = fakeImageData.data[offset];
-                const g = fakeImageData.data[offset + 1];
-                const b = fakeImageData.data[offset + 2];
+            for (let offset = 0; offset < buffer.length; offset += 4) {
+                const r = buffer[offset];
+                const g = buffer[offset + 1];
+                const b = buffer[offset + 2];
 
-                const lutIndex = r * 256 * 256 + g * 256 + b;
+                // 65536 = 256 * 256
+                const lutIndex = r * 65536 + g * 256 + b;
               
-                try {
-                    const color = lut[lutIndex];      
-                    if (color[0] < 0 || color[0]>255) {
-                        console.log(r, g, b, lutIndex, lut.length, color.slice(0));
-                    }
-                    if (color[1] < 0 || color[1]>255) {
-                        console.log(r, g, b, lutIndex, lut.length, color.slice(0));
-                    }
-                    if (color[2] < 0 || color[2]>255) {
-                        console.log(r, g, b, lutIndex, lut.length, color.slice(0));
-                    }
 
-                    fakeImageData.data[offset] = Math.min(255, Math.floor(color[0]));
-                    fakeImageData.data[offset + 1] = Math.min(255, Math.floor(color[1]));
-                    fakeImageData.data[offset + 2] = Math.min(255, Math.floor(color[2]));
-                    fakeImageData.data[offset + 3] = 255;
-                }
+                const color = window.lut[lutIndex];
 
-                catch(error) {
-                    console.error(error);
-                    console.log(r, g, b, lutIndex, lut.length);
-                    debugger;
-                }
+                buffer[offset] = color[0];
+                buffer[offset + 1] = color[1];
+                buffer[offset + 2] = color[2];
+                buffer[offset + 3] = 255;
             
             }
-            
+            nbFrameRendered++;
             animation.clear();
-            context.putImageData(fakeImageData, 0, 0);
+            context.putImageData(imageData, 0, 0);
         }
     });
-    
-    
+
+    setInterval(() => {
+        fpsLabel.textContent = nbFrameRendered;
+        nbFrameRendered = 0;
+    }, 1000);
+
     video.addEventListener('loadeddata', () => {
         if (video.videoWidth < video.videoHeight) {
             animation.canvas.style.top = ((video.offsetHeight / video.videoHeight) * -100) + '%';

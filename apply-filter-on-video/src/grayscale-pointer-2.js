@@ -1,7 +1,6 @@
 import Animation from '../../shared/animation.model';
 import PointerCoordsHelper from "../../shared/pointer-coords.helper";
 import CollisionHelper from "../../shared/collision.helper";
-import ImageProcessing from "image-processing";
 import GeometryHelper from "../../shared/geometry.helper";
 
 
@@ -10,6 +9,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Create canvas for video's pixel extraction
     const extractPixelCanvas = document.createElement('canvas');
     const extractPixelContext = extractPixelCanvas.getContext('2d');
+    let nbFrameRendered = 0;
+    const fpsLabel = document.getElementById('fps');
+
+    setInterval(() => {
+        fpsLabel.textContent = nbFrameRendered;
+        nbFrameRendered = 0;
+    }, 1000);
 
     function extractVideoImageData(video, width, height) {
         extractPixelCanvas.width =  width;
@@ -36,19 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
             0.59 * buffer[offset + 1] +
             0.11 * buffer[offset + 2]
         ) * (buffer[offset + 4] / 255.0));
-    }
-
-    /**
-     * @param {Uint8Array} pixelBuffer 
-     */
-    function applyGrayscaleFilter(pixelBuffer) {
-        for (let offset = 0; offset <pixelBuffer.length; offset += 4) {
-            const grayscale = rgbToGrayscale(pixelBuffer, offset);
-            pixelBuffer[offset] = grayscale;
-            pixelBuffer[offset + 1] = grayscale;
-            pixelBuffer[offset + 2] = grayscale;
-            pixelBuffer[offset + 3] = 255;
-        }
     }
 
     const animation = new Animation({
@@ -125,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            nbFrameRendered++;
 
             animation.clear();
             context.putImageData(imageData, 0, 0);

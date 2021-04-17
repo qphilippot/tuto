@@ -2,15 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="1d4cba02-dd7d-4ba2-ad7f-695934f02b5f" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/apply-filter-on-video/src/apply-filter-to-whole-buffer.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apply-filter-on-video/src/grayscale-filter.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apply-filter-on-video/src/grayscale-pointer-1.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apply-filter-on-video/dist/demo.js" beforeDir="false" afterPath="$PROJECT_DIR$/apply-filter-on-video/dist/demo.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apply-filter-on-video/dist/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/apply-filter-on-video/dist/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apply-filter-on-video/src/grayscale-pointer-2.js" beforeDir="false" afterPath="$PROJECT_DIR$/apply-filter-on-video/src/grayscale-pointer-2.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apply-filter-on-video/src/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/apply-filter-on-video/src/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apply-filter-on-video/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/apply-filter-on-video/src/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apply-filter-on-video/src/step-5+.js" beforeDir="false" afterPath="$PROJECT_DIR$/apply-filter-on-video/src/step-5+.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apply-filter-on-video/src/step-5.js" beforeDir="false" afterPath="$PROJECT_DIR$/apply-filter-on-video/src/step-5.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apply-filter-on-video/webpack.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/apply-filter-on-video/webpack.config.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shared/pointer-coords.helper.js" beforeDir="false" afterPath="$PROJECT_DIR$/shared/pointer-coords.helper.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,6 +50,8 @@
       <workItem from="1613231147296" duration="1331000" />
       <workItem from="1613313052932" duration="6000" />
       <workItem from="1618055497856" duration="7468000" />
+      <workItem from="1618138425191" duration="8736000" />
+      <workItem from="1618641373092" duration="15127000" />
     </task>
     <servers />
   </component>
@@ -66,5 +68,6 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
 </project>
