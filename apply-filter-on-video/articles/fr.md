@@ -289,7 +289,7 @@ const animation = new Animation({
 
 Pour chaque pixel, nous remplaçons les canaux RGB par leur niveau de gris.
 
-Intuitivement, il serait tentant d'utiliser une moyenne des composantes RGB. Toutefois, puisque notre oeil ne perçoit pas toutes les couleurs avec la même sensibilité, une telle méthode ne serait pas optimale pour l'œil humain. On utilise à la place la **luminance** du pixel. Ce n'est rien d'autre qu'une combinaison des trois couleurs, mais avec des coefficients pour prendre en compte notre sensibilité à la perception des couleurs.
+Intuitivement, il serait tentant d'utiliser une moyenne des composantes `RGB`. Toutefois, puisque notre oeil ne perçoit pas toutes les couleurs avec la même sensibilité, une telle méthode ne serait pas optimale pour l'œil humain. On utilise à la place la **luminance** du pixel. Ce n'est rien d'autre qu'une combinaison des trois couleurs, mais avec des coefficients pour prendre en compte notre sensibilité à la perception des couleurs.
 
 ![Alt Text](https://github.com/qphilippot/tuto/blob/master/apply-filter-on-video/assets/gif/grayscale.gif?raw=true)
 
@@ -464,4 +464,150 @@ Il existe des méthodes permettant d'obtenir un résultat plus propre, et moins 
 
 ## La vie en bleu 
 
+Dans ce dernier exemple, je propose de teindre ce cher perroquet en bleu. Pour atteindre notre objectif, considérons la couleur de son plumage d'origine. Il n'est pas simplement rouge, mais couvre une nuance de rouge. Le filtre devra prendre en compte toutes ces nuances, notamment pour proposer un rendu réaliste prenant en compte la pigmentation naturelle des plumes ainsi les variations de luminosité.
+
+### Rappel sur la représentation de la couleur
+La représentation des couleurs dans les `ImageData` est en `RGBA`. En d'autre terme, la couleur finale est obtenue a partir d'un mélange des quatre composantes.
+
+Une solution naïve consisterait à supprimer la dimension rouge (mettre toutes les intensités à 0). L'inconveignant de cette approche est que dans l'espace `RGBA`, toutes les couleurs ont une part contiennent une part de rouge. Autrement dit, si l'on modifie la composante `R`, quasiment toutes les couleurs seront impactées.
+
+Le problème ici est que l'on se restreint à l'utilisation d'un seul espace couleur (`RGBA`), dans lequels toutes nos couleurs sont fortement corrélées à la couleur rouge. Toutefois, il en existe d'autres espaces, lesquels permettent d'exprimer des couleurs selon d'autres dimensions, et qui proposent des équations pour passer d'un espace couleur vers un autre. Selon le cas d'usage, certains espaces couleurs sont plus pratiques que d'autres (`YCrCb` pour la compression, `CMJN` pour l'impression, etc).
+
+Dans le cas présent, l'ensemble `HSL` *Hue Saturation Lightness*, ou `TSV` en français semble le plus approprié. Dans cet espace, la *teinte* des couleurs est définie via un cercle colorimétrique. Pour transformer du "rouge" en "bleu", il suffit de déterminer une section du cercle que l'on souhaite remplacer, et d'y coller la section par laquelle on souhaite le remplacer.
+
+![Alt Text](https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/HSV_cone.png/300px-HSV_cone.png)
+
+### Principe du filtre
+
+* Récupérer la couleur du nos pixels `RGBA`
+* Les convertir en `HSL`
+* Manipuler les teintes *rouges* et les remplacer par des *bleues*
+* Reconvertir en `RGBA`
+* Remplir l'instance `ImageData` avec ces pixels modifiés
+
+### Implémentation
+
+Concernant les fonctions de transformations `HSL` vers `RGBA` et réciproquement, je vous laisse checker le git. Pour en savoir plus : [https://en.wikipedia.org/wiki/HSL_and_HSV](https://en.wikipedia.org/wiki/HSL_and_HSV).
+
+Pour des raisons de performances, nous allons implémenter une Look Up Table (LUT), c'est à dire une table de correspondance pour toutes nos couleurs. L'enjeu est de ne pas calculer toutes les correspondances de couleurs à la volée, pixels par pixels, à chaque nouvelle image, mais de les calculer une bonne fois pour toute au lancement de la page. 
+
+La méthode de rendu n'aura qu'à lire dans cette LUT pour y lire les résultats et gagner un temps précieux (et un meilleur frame rate).
+#### Calcul de la LUT
+```js
+function generateRedToBlueLUT() {
+    const size = 16777216; // 256 * 256 * 256
+    const lut = new Array(size);
+
+    // initialize all colors to black
+    for (let i = 0; i < size; i++) {
+        lut[i] = [0, 0, 0];
+    }
+
+    // iterate through RGB combinaisons
+    for (let redOffset = 0; redOffset < 256; redOffset++) {
+        for (let greenOffset = 0; greenOffset < 256; greenOffset++) {
+            for (let blueOffset = 0; blueOffset < 256; blueOffset++) {
+                // Use a pool design pattern
+                // If you want to implements it without object pool, juste replace it by [0, 0, 0]
+                const rgb = vec3Pool.getOne();
+                const hsl = vec3Pool.getOne();
+                
+                rgb[0] = redOffset;
+                rgb[1] = greenOffset;
+                rgb[2] = blueOffset;
+
+                // color conversion, check sources for detailled implementation 
+                rgbToHSL(rgb, hsl);
+
+                // Clamp saturation and lightness
+                hsl[1] = Math.max(0, Math.min(hsl[1], 1));
+                hsl[2] = Math.max(0, Math.min(hsl[2], 1));
+
+                // Here is the trick: hue is represented by a degree angle
+                // We want : 0 <= hue < 360
+                if (hsl[0] < 0) {
+                    hsl[0] += 360;
+                }
+
+                hsl[0] = hsl[0] % 360;
+
+                // Assume that :
+                // - "red" hues are between 340° and 20°
+                // - "blue" are between 140° and 220°
+                
+                // replace hue
+                if (hsl[0] > 340 && hsl[2] < 0.85) {
+                    hsl[0] -= 120;
+                }
+
+                else if (hsl[0] < 20 && hsl[2] < 0.85) {
+                    hsl[0] += 240;
+                }
+
+                // sanitize angle : 0 <= hue < 360 
+                if (hsl[0] < 0) {
+                    hsl[0] += 360;
+                }
+
+                hsl[0] = hsl[0] % 360;
+                
+                hslToRGB(hsl, rgb);
+
+                // store RGBA converted into lut
+                lut[redOffset * 65536 + greenOffset * 256 + blueOffset] = Array.from(rgb);
+                
+                // recycle instance, only for object pool implementation
+                vec3Pool.recycle(rgb);
+                vec3Pool.recycle(hsl);
+            }
+        }
+    }
+
+    return lut;
+}
+window.lut = generateRedToBlueLUT();
+ ```
+Plusieurs remarques sur cette implémentation :
+* Notre LUT est un tableau. On calcule l'index de chaque couleur par la formule `R * 255 * 255 + G * 255 + B`
+* Pour des raisons de performances, on utilise un object pool design pattern. En effet, on va instancier pas mal de petits tableaux pour calculer notre LUT, et cela peut surcharger inutilement la mémoire du navigateur. Pour en savoir plus sur l'implémentation de l'object pool design pattern en JS, lisez l'article suivant : [Optimisez vos applications JS avec l'Object Pool Design Pattern !](https://dev.to/qphilippot/optimisez-vos-applications-js-avec-l-object-pool-design-pattern-3g8)
+* Les calculs d'angles sont empiriques, à partir du cercle colorimétrique. D'ailleurs, en regardant attentivement le rendu, on peut s'apercevoir que la "teinture" n'est pas parfaite, et que quelques pointens de rouges se promènent ça et là ;)
+
+#### Coup d'oeil sur la méthode de rendu
+
+```js
+render: (context, canvas) => {
+    const imageData = extractVideoImageData(video, canvas.width, canvas.height);
+    const buffer = imageData.data;
+
+    for (let offset = 0; offset < buffer.length; offset += 4) {
+        const r = buffer[offset];
+        const g = buffer[offset + 1];
+        const b = buffer[offset + 2];
+
+        // 65536 = 256 * 256
+        const lutIndex = r * 65536 + g * 256 + b;
+        
+        // just replace color by pre-computed value
+        const color = window.lut[lutIndex];
+
+        buffer[offset] = color[0];
+        buffer[offset + 1] = color[1];
+        buffer[offset + 2] = color[2];
+        buffer[offset + 3] = 255;
+
+    }
+    
+    animation.clear();
+    context.putImageData(imageData, 0, 0);
+}
+```
+
+Et voici un beau perroquet haut en couleur ! :D
+
 ![Alt Text](https://github.com/qphilippot/tuto/blob/master/apply-filter-on-video/assets/gif/blue-1.gif?raw=true)
+
+## Conclusion
+
+J'espère sincèrement que ce tutoriel vous a plus. Le principe derrière l'utilisation de filtres en live est assez simple à implémenter, mais nécessitait bien selon moi quelques exemples pour comprendre son utilisation. Je suis passé assez rapidement sur certains points pour essayer de ne pas trop dévier de l'objectif principal : torturer ce pauvre oiseau utiliser une boucle de rendu pour appliquer des filtres en temps réels.
+
+N'hésitez pas à me faire part de vos commentaires ou de vos remarques, c'est toujours un plaisir ;)

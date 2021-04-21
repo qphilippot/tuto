@@ -178,7 +178,7 @@ function generateRedToBlueLUT() {
 
                 lut[redOffset * 65536 + greenOffset * 256 + blueOffset] = Array.from(rgb);
                 vec3Pool.recycle(rgb);
-                vec3Pool.getOne(hsl);
+                vec3Pool.recycle(hsl);
             }
         }
     }
