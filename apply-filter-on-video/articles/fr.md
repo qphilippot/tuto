@@ -75,7 +75,7 @@ Pour afficher le contenu d'une matrice de pixel sur un écran, il suffit de l'in
 canvasContext2D.putImageData(instanceOfImageData, 0, 0);
 ```
 
-####Quelques explications sur la classe `ImageData`
+#### Quelques explications sur la classe `ImageData`
 La structure de l'objet est relativement simple :
 * une instance possède les propriétés `width` et `height`correspondant à la résolution de l'image.
 * Les pixels sont stockés dans la propriété `data`, une matrice de type `Uint8ClampedArray`.
