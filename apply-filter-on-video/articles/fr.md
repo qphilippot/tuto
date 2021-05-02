@@ -9,7 +9,7 @@ En règle générale, ces corrections s'appliquent avant l'enregistrement des im
 Je vous propose une solution très simple permettant d'effectuer ces traitements directement depuis notre navigateur. 
 
 Cette méthode peut se résumer ainsi :
-- Intégrer une vidéo la notre page, grâce à la balise `<video>` (idéalement en caché)
+- Intégrer une vidéo la nôtre page, grâce à la balise `<video>` (idéalement en caché)
 - Récupérer son flux vidéo dans un objet `ImageData`
 - Effectuer le traitement de l'image dessus
 - Afficher le résultat dans une balise `<canvas>`.
@@ -32,7 +32,7 @@ Cette méthode peut se résumer ainsi :
 
 Si vous vous êtes déjà intéressés à l'**encodage des vidéos**, vous savez qu'obtenir un flux de pixels à partir d'un fichier est une tâche complexe. Pour parser les fichiers vidéos, maîtriser les différents formats est un indispensable.
 
-*« - Alors nous devoir allons apprendre tous les formats vidéos pour continuer ? »* 😨 
+*« - Alors, nous allons devoir apprendre tous les formats vidéos pour continuer ? »* 😨 
 
 Non, revenez ! Le navigateur s'occupe de tout ! 
 
@@ -118,7 +118,7 @@ L'utilisation d'un filtre sur un flux vidéo est considérée (ici) comme une **
 
 L'implémentation du filtre et la modification des pixels font office de **méthode de rendu**, tandis que la synchronisation entre le canvas et le lecteur vidéo déterminera le comportement de la **boucle de rendu**.
 
-Ces termes vous paraissent abstraits ? J'ai écrit un tutoriel sur le sujet : [Faîtes vos propres animations en JS](https://dev.to/qphilippot/faites-vos-propres-animations-en-js-34ok).
+Ces termes vous paraissent abstraits ? J'ai écrit un tutoriel sur ce sujet : [Faîtes vos propres animations en JS](https://dev.to/qphilippot/faites-vos-propres-animations-en-js-34ok).
 
 
 ### Synchroniser l'animation avec le lecteur vidéo - Définir la boucle de rendu
@@ -151,7 +151,7 @@ video.addEventListener('timeupdate', () => {
 
 ### Implémentation d'un filtre - Définir une méthode de rendu
 
-Nous savons désormais comment extraire les pixels d'une vidéo, et configurer la boucle de rendu. Il ne reste plus qu'à définir la méthode de rendu.
+Nous savons désormais comment extraire les pixels d'une vidéo et configurer la boucle de rendu. Il ne reste plus qu'à définir la méthode de rendu.
 
 ```js
 const animation = new Animation({
@@ -169,7 +169,7 @@ const animation = new Animation({
 ```
 
 
-Ce tutoriel s'appuie sur une connaissance rudimentaire des `canvas`. Besoin d'une piqûre de rappel ? Cet [article](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Pixel_manipulation_with_canvas) est un classique, de plus, il montre comment appliquer des filtres sur des images. Il constitue un excellent complément à ce tuto. N'hésitez pas à y jeter un oeil ! 👍
+Ce tutoriel s'appuie sur une connaissance rudimentaire des `canvas`. Besoin d'une piqûre de rappel ? Cet [article](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Pixel_manipulation_with_canvas) est un classique, de plus, il montre comment appliquer des filtres sur des images. Il constitue un excellent complément à ce tuto. N'hésitez pas à y jeter un œil  ! 👍
 
 
 
@@ -292,7 +292,7 @@ const animation = new Animation({
 
 Nous remplaçons les canaux RGB de chaque pixel par leur niveau de gris.
 
-Intuitivement, il serait tentant de calculer une moyenne des composantes `R`, `G` et `B` et d'utiliser cette valeur comme niveau de gris. Toutefois, l'oeil humain ne perçoit pas toutes les couleurs avec la même sensibilité. Et puisque nous sommes plus sensibles à certaines couleurs, il est tout naturel de donner plus d'importances à celles-ci lors du calcul du niveau de gris.
+Intuitivement, il serait tentant de calculer une moyenne des composantes `R`, `G` et `B` et d'utiliser cette valeur comme niveau de gris. Toutefois, l'œil humain ne perçoit pas toutes les couleurs avec la même sensibilité. Et puisque nous sommes plus sensibles à certaines couleurs, il est tout naturel de donner plus d'importances à celles-ci lors du calcul du niveau de gris.
 
 Cela explique la présence des constantes `0.30`, `0.59` et `0.11` dans la méthode `rgbToGrayscale`. L'intensité obtenue par cette méthode est appelée la **luminance**  du pixel.
 
@@ -366,7 +366,7 @@ const animation = new Animation({
 
 ## On corse le jeu ! 🚀
 
-On va appliquer le filtre grayscale sur toute l'image, et ne faire apparaître les couleurs que sur les pixels autour de notre curseur.
+On va appliquer le filtre grayscale sur toute l'image et ne faire apparaître les couleurs que sur les pixels autour de notre curseur.
 
 Petite subtilité : pour créer un effet plus lisse, on déterminera un cercle à l'intérieur duquel les pixels seront colorés, mais avec une intensité inversement proportionnelle à la distance au centre…
 
@@ -509,7 +509,7 @@ En effet, on peut mieux faire ! Néanmoins, concentrons-nous sur le positif : no
 
 Nous parvenons à déceler les **contours** du perroquet lorsqu'il effectue un mouvement. Mais ses déplacements sont lents, peu perceptibles d'une frame sur l'autre. 
 
-De plus, le **taux de rafraichissement** étant relativement élevé (60 fps), nous effectuons un rendu approximativement toutes les 16ms. Les mouvements ne sont donc perceptibles que durant ce laps et temps, et sont oubliés au rendu suivant.
+De plus, le **taux de rafraichissement** étant relativement élevé (60 fps), nous effectuons un rendu approximativement toutes les 16ms. Les mouvements ne sont donc perceptibles que durant ce laps et temps et sont oubliés au rendu suivant.
 
 Sachant que la **persistance rétinienne** est de l'ordre de 1/25 de secondes (40 ms), pour avoir un rendu plus fidèle, il faudrait garder en mémoire l'image des 40 dernières ms, et les prendre en compte dans notre calcul du mouvement.
 
@@ -622,14 +622,14 @@ render: (context, canvas) => {
 ```
 **Remarques :**
 * Lorsqu'on additionne des buffers, ne pas oublier d'effectuer un **clamp** afin de s'assurer que les valeurs additionnées restent dans l'intervalle des valeurs autorisées par la structure de donnée (entre 0 et 255).
-* La méthode `shallowCopy` se contente d'effectuer une **copie superficielle** d'un tableau dans un autre tableau. Le but est de réutiliser les instances existantes, et d'éviter la répétition de code. Son implémentation est triviale et disponible sur le [git](https://github.com/qphilippot/tuto/blob/master/apply-filter-on-video/). 
+* La méthode `shallowCopy` se contente d'effectuer une **copie superficielle** d'un tableau dans un autre tableau. Le but est de réutiliser les instances existantes et d'éviter la répétition de code. Son implémentation est triviale et disponible sur le [git](https://github.com/qphilippot/tuto/blob/master/apply-filter-on-video/). 
 
 ![Détection de mouvement grâce à un filtre sur un canvas JS avec simulation de persistance](https://github.com/qphilippot/tuto/blob/master/apply-filter-on-video/assets/gif/movement-2.gif?raw=true)
 
 
 Voici une tentative se basant sur les 5 dernières frames, avec coefficient équivalent à 15. Si les mouvements sont davantages perceptibles, le coût en calcul lui est nettement plus élevé. On passe de 60 fps à un peu plus de 20 fps. Rien de plus normal, on a presque triplé la charge de travail.
 
-Il existe des méthodes permettant d'obtenir un résultat plus propre, et moins gourmant en calcul, mais également moins simple à expliquer 😁. 
+Il existe des méthodes permettant d'obtenir un résultat plus propre et moins gourmant en calcul, mais également moins simple à expliquer 😁. 
 
 Puisque le but de cet article est de présenter des filtres simples, je les passe sous silence. Cela fera peut-être l'objet d'un prochain tutoriel.
 ## La vie en bleu 🦜
@@ -643,13 +643,13 @@ La représentation des couleurs dans les `ImageData` est en `RGBA`. En d'autres 
 
 Une solution naïve consisterait à supprimer la dimension rouge (mettre toutes les intensités à 0). Le défaut de cette représentation (`RGBA`), toutes les couleurs ont une part contiennent une part de rouge. Autrement dit, si l'on modifie la composante `R`, quasiment toutes les couleurs seront impactées.
 
-Bonne nouvelle : il existe énormément d'espaces couleurs, et dont la plupart ne sont pas couplés à la couleur rouge ! Des formules mathématiques permettent de changer facilement de représentation, il n'y a donc aucune raison de se borner à ce bon vieux `RGB`.
+Bonne nouvelle : il existe énormément d'espaces couleurs et dont la plupart ne sont pas couplés à la couleur rouge ! Des formules mathématiques permettent de changer facilement de représentation, il n'y a donc aucune raison de se borner à ce bon vieux `RGB`.
 
 Selon le cas d'usage, certains espaces couleurs sont plus pratiques que d'autres (`YCrCb` pour la compression, `CMJN` pour l'impression, etc).
 
 Dans le cas présent, l'ensemble `HSL` *Hue Saturation Lightness*, ou `TSV` en français semble le plus approprié. Dans cet espace, la **teinte** des couleurs est définie via un cercle colorimétrique.
 
-Pour transformer du "rouge" en "bleu", il suffit de déterminer une section du cercle que l'on souhaite remplacer, et d'y coller la section par laquelle on souhaite le remplacer.
+Pour transformer du "rouge" en "bleu", il suffit de déterminer une section du cercle que l'on souhaite remplacer et d'y coller la section par laquelle on souhaite le remplacer.
 
 ![Schéma illustrant l'espace TSV](https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/HSV_cone.png/300px-HSV_cone.png)
 
@@ -746,7 +746,7 @@ window.lut = generateRedToBlueLUT();
 Plusieurs remarques sur cette implémentation :
 * Notre LUT est un tableau. On calcule l'index de chaque couleur par la formule `R * 255 * 255 + G * 255 + B`
 * Pour des raisons de performances, on utilise un object pool design pattern. Le calcul d'une LUT demande d'instancier pas mal de petits tableaux, cela peut surcharger inutilement la mémoire du navigateur. Pour en savoir plus sur l'implémentation de l'object pool design pattern en JS, lisez l'article suivant : [Optimisez vos applications JS avec l'Object Pool Design Pattern !](https://dev.to/qphilippot/optimisez-vos-applications-js-avec-l-object-pool-design-pattern-3g8)
-* Les calculs d'angles sont empiriques, à partir du cercle colorimétrique. D'ailleurs, en regardant attentivement le rendu, on peut s'apercevoir que la "teinture" n'est pas parfaite, et que quelques pointes de rouges se promènent ça et là 😉
+* Les calculs d'angles sont empiriques, à partir du cercle colorimétrique. D'ailleurs, en regardant attentivement le rendu, on peut s'apercevoir que la "teinture" n'est pas parfaite et que quelques pointes de rouges se promènent ça et là 😉
 
 #### Coup d'oeil sur la méthode de rendu
 
