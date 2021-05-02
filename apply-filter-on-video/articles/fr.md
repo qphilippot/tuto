@@ -9,7 +9,7 @@ En règle générale, ces corrections s'appliquent avant l'enregistrement des im
 Je vous propose une solution très simple permettant d'effectuer ces traitements directement depuis notre navigateur. 
 
 Cette méthode peut se résumer ainsi :
-- Intégrer une vidéo la nôtre page, grâce à la balise `<video>` (idéalement en caché)
+- Intégrer une vidéo la page, grâce à la balise `<video>` (idéalement en caché)
 - Récupérer son flux vidéo dans un objet `ImageData`
 - Effectuer le traitement de l'image dessus
 - Afficher le résultat dans une balise `<canvas>`.
