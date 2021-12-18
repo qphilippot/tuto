@@ -1,3 +1,3 @@
 export default interface AnimationInterface {
-    render(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D): void;
+    render(time: DOMHighResTimeStamp, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D): void;
 }

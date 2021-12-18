@@ -23,14 +23,15 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.(png|jpg|jpeg|gif)$/i,
+        type: "asset/resource",
+      },
+      {
         test: /\.tsx?$/,
         use: 'ts-loader',
         exclude: /node_modules/
       },
-      {
-        test: /\.(png|svg|jpg)$/,
-        type: "asset/inline"
-      },
+
     ],
   },
 
