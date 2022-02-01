@@ -20,8 +20,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     //     }
     // })
 
-    const fpsLabel = document.getElementById('fps');
-    let nbFrameRendered = 0;
+    // const fpsLabel = document.getElementById('fps');
+    // let nbFrameRendered = 0;
     
     setInterval(() => {
         context.clearRect(0, 0, canvas.width, canvas.height);

@@ -4,7 +4,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin').CleanWebpackPlugin;
 
 module.exports = {
   mode: 'development',
-  entry: './src/index.ts',
+  entry: './src/2-share-spritesheet-with-multiples-object/index.ts',
 
   plugins: [
     // new CleanWebpackPlugin(['dist/*']) for < v2 versions of CleanWebpackPlugin
